@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 import { Container } from './App.styled';
 import ContactForm from './ContactForm';
 import ContactList from './ContactList';
+import Filter from './Filter';
 
 class App extends Component {
   state = {
@@ -22,13 +23,35 @@ class App extends Component {
    }))
   }
 
-  formSubmitHandler = data => {
-    console.log(data);
-  }
+  formSubmitHandler = ({ name, number }) => {
+    const normalazedFind = name.toLowerCase();
+    const findName = this.state.contacts.find(contact => contact.name.toLowerCase() === normalazedFind);
 
+    if (findName) {
+      return alert(`${name} is alredy in contacts.`)
+    };
+
+    this.setState(({ contacts }) => ({
+      contacts: [{ name, number, id: nanoid() }, ...contacts]
+    }));
+  };
+
+  changeFilter = event => {
+    const { value } = event.currentTarget
+    this.setState({ filter: value })
+  };
+
+  getVisibleContacts = () => {
+    const { filter, contacts } = this.state;
+    const normalizedFilter = filter.toLowerCase();
+    return contacts.filter(({ name }) =>
+      name.toLowerCase().includes(normalizedFilter))
+  };
 
 
   render() {
+    const { filter } = this.state
+    const visibleContacts = this.getVisibleContacts()
 
     return(
     <Container>
@@ -36,7 +59,8 @@ class App extends Component {
     <ContactForm onSubmit={this.formSubmitHandler} />
     
     <h2>Contacts</h2>
-    <ContactList contacts={this.state.contacts} onDeleteContact={this.deletedContact} />  
+        <Filter filter={filter} onChange={this.changeFilter}/>
+    <ContactList contacts={visibleContacts} onDeleteContact={this.deletedContact} />  
     </Container>
   )}
 }
